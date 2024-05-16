@@ -1,0 +1,85 @@
+import heapq
+
+class Task:
+    def __init__(self, title, description, priority):
+        self.title = title
+        self.description = description
+        self.priority = priority
+
+class PriorityQueue:
+    def __init__(self):
+        self.tasks = []
+
+    def add_task(self, task):
+        # Adiciona a tarefa na fila de prioridades usando heapq
+        heapq.heappush(self.tasks, (task.priority, task))
+
+    def get_highest_priority_task(self):
+        # Retorna a tarefa com a maior prioridade sem removê-la
+        if self.tasks:
+            return self.tasks[0][1]
+        else:
+            return None
+
+    def remove_highest_priority_task(self):
+        # Remove e retorna a tarefa com a maior prioridade
+        if self.tasks:
+            return heapq.heappop(self.tasks)[1]
+        else:
+            return None
+
+class TaskManager:
+    def __init__(self):
+        # Inicializa listas de tarefas pendentes e concluídas
+        self.pending_tasks = PriorityQueue()
+        self.completed_tasks = []
+
+    def add_pending_task(self, task):
+        # Adiciona uma tarefa pendente à fila de prioridades
+        self.pending_tasks.add_task(task)
+
+    def mark_task_as_completed(self, task):
+        # Move uma tarefa pendente para a lista de tarefas concluídas
+        self.completed_tasks.append(task)
+    
+    def move_task_to_completed(self):
+        # Move a tarefa com a maior prioridade das pendentes para as concluídas
+        task = self.pending_tasks.remove_highest_priority_task()
+        if task:
+            self.mark_task_as_completed(task)
+            return task
+        else:
+            return None
+
+    def search_tasks_by_title(self, title):
+        # Procura tarefas pelo título em ambas as listas
+        pending_matching_tasks = [task for _, task in self.pending_tasks.tasks if task.title == title]
+        completed_matching_tasks = [task for task in self.completed_tasks if task.title == title]
+        return pending_matching_tasks + completed_matching_tasks
+
+    def filter_tasks_by_priority(self, priority):
+        # Filtra tarefas pendentes por prioridade
+        matching_tasks = [task for _, task in self.pending_tasks.tasks if task.priority == priority]
+        return matching_tasks
+
+# Exemplo de Uso:
+if __name__ == "__main__":
+    # Cria uma instância do gerenciador de tarefas
+    task_manager = TaskManager()
+
+    # Adiciona algumas tarefas pendentes
+    task_manager.add_pending_task(Task("Fazer relatório", "Escrever o relatório do projeto", 2))
+    task_manager.add_pending_task(Task("Revisar código", "Revisar o código do programa", 1))
+    task_manager.add_pending_task(Task("Enviar e-mail", "Enviar e-mail com atualizações", 3))
+
+    # Move a tarefa com a maior prioridade para as tarefas concluídas
+    completed_task = task_manager.move_task_to_completed()
+    print("Tarefa concluída:", completed_task.title)
+
+    # Procura tarefas pelo título
+    matching_tasks = task_manager.search_tasks_by_title("Enviar e-mail")
+    print("Tarefas encontradas:", [task.title for task in matching_tasks])
+
+    # Filtra tarefas pendentes por prioridade
+    high_priority_tasks = task_manager.filter_tasks_by_priority(1)
+    print("Tarefas com alta prioridade:", [task.title for task in high_priority_tasks])
